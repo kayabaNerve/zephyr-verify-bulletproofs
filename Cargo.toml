@@ -2,7 +2,7 @@
 name = "zephyr-verify-bulletproofs"
 version = "0.1.0"
 edition = "2021"
-LICENSE = "MIT"
+license = "MIT"
 
 [dependencies]
 rand_core = "0.6"
@@ -14,5 +14,6 @@ serde_json = "1"
 monero-serai = { git = "https://github.com/serai-dex/serai" }
 monero-rpc = { git = "https://github.com/serai-dex/serai" }
 monero-simple-request-rpc = { git = "https://github.com/serai-dex/serai" }
+curve25519-dalek = { version = "4", default-features = false, features = ["alloc", "zeroize"] }
 
 tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread"] }

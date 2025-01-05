@@ -1243,6 +1243,7 @@ dependencies = [
 name = "zephyr-verify-bulletproofs"
 version = "0.1.0"
 dependencies = [
+ "curve25519-dalek",
  "hex",
  "monero-rpc",
  "monero-serai",
