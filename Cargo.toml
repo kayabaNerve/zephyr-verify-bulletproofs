@@ -2,7 +2,7 @@
 name = "zephyr-verify-bulletproofs"
 version = "0.1.0"
 edition = "2021"
-LICENSE = "MIT"
+license = "MIT"
 
 [dependencies]
 rand_core = "0.6"

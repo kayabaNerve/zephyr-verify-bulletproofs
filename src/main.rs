@@ -1,19 +1,18 @@
 use serde::Deserialize;
 use serde_json::json;
 
+use curve25519_dalek::{EdwardsPoint, Scalar};
+
 use monero_rpc::Rpc;
 use monero_serai::{
   io::*,
+  generators,
   ringct::{clsag::Clsag, bulletproofs::Bulletproof},
-  generators
 };
-
-use curve25519_dalek::{EdwardsPoint, Scalar};
-
 
 #[tokio::main]
 async fn main() {
-
+  #[allow(non_snake_case)]
   let H: EdwardsPoint = *generators::H;
 
   let tx_hashes = [
@@ -150,14 +149,18 @@ async fn main() {
 
     let valid = bp.verify(&mut rand_core::OsRng, &output_commitments);
     println!("{tx_hash} has valid Bulletproofs: {valid}");
-    if !valid{
-      let amount_to_correct = Scalar::from(16_000_000u64*1_000_000_000_000);
-      output_commitments.iter().enumerate().for_each(|(i, _c)|{
+    if !valid {
+      let units = 16_000_000u64;
+      let decimals = 1_000_000_000_000;
+      let amount_to_correct = Scalar::from(units * decimals);
+      output_commitments.iter().enumerate().for_each(|(i, _c)| {
         let mut output_commitments_adapted = output_commitments.clone();
         output_commitments_adapted[i] += amount_to_correct * H;
         let valid = bp.verify(&mut rand_core::OsRng, &output_commitments_adapted);
-        if valid{
-          println!("{tx_hash} with an additional 16 million added to the output with index {i} has valid Bulletproofs: {valid}");
+        if valid {
+          println!(
+            "{tx_hash} with {units} ZEPH added to output #{i} has valid Bulletproofs: {valid}"
+          );
         }
       });
     }
