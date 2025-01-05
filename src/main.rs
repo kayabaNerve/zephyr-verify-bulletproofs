@@ -7,8 +7,17 @@ use monero_serai::{
   ringct::{clsag::Clsag, bulletproofs::Bulletproof},
 };
 
+use curve25519_dalek::{EdwardsPoint, Scalar, constants::ED25519_BASEPOINT_POINT};
+use sha3::*;
+
+
 #[tokio::main]
 async fn main() {
+
+  let H: EdwardsPoint = decompress_point(Keccak256::digest(&ED25519_BASEPOINT_POINT.compress().to_bytes()).into())
+  .unwrap()
+  .mul_by_cofactor();
+
   let tx_hashes = [
     // The transactions alleged to have invalid Bulletproofs
     "b17ef3d2e65ab980c8bd6cbe3210a8b3c9e417fb9621209380f7c1f756fcb2ed",
@@ -143,5 +152,21 @@ async fn main() {
 
     let valid = bp.verify(&mut rand_core::OsRng, &output_commitments);
     println!("{tx_hash} has valid Bulletproofs: {valid}");
+    if !valid{
+      //Check if adding 16 million to one of the commitments results in a valid BP+
+      let amount_to_correct = Scalar::from(16_000_000u64*1_000_000_000_000); // 16 million in atomic units
+      let mut output_commitments_adapted = output_commitments.clone();
+      output_commitments_adapted[0] += amount_to_correct * H; // Modify first output
+      let valid = bp.verify(&mut rand_core::OsRng, &output_commitments_adapted);
+      if valid{
+        println!("{tx_hash} with an additional 16 million added to the 1st output has valid Bulletproofs: {valid}");
+      }
+      let mut output_commitments_adapted = output_commitments.clone();
+      output_commitments_adapted[1] += amount_to_correct * H; // Modify second output
+      let valid = bp.verify(&mut rand_core::OsRng, &output_commitments_adapted);
+      if valid{
+        println!("{tx_hash} with an additional 16 million added to the 2nd output has valid Bulletproofs: {valid}");
+      }
+    }
   }
 }
